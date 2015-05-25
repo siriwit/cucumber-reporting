@@ -56,7 +56,10 @@
     <div id="fullwidth_gradient">
         <div class="container_12">
             <div class="grid_9 heading">
-                <h2 id="overview-title">Feature Overview for Build: $build_number</h2>
+                <h2 id="overview-title">Feature Overview</h2>
+                <h3 id="overview-title">$deviceName</h3>
+                <h3 id="overview-title">$platform</h3>
+                <h3 id="overview-title">$platformVersion</h3>
                 #if($fromJenkins)
                     <h2 id="overview-project">Project Name: <i>$build_project</i></h2>
                 #end

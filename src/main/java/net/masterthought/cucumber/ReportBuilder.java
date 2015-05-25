@@ -43,6 +43,14 @@ public class ReportBuilder {
     private boolean artifactsEnabled;
     private boolean highCharts;
     private boolean parsingError;
+    
+    /*
+     * Custom path.
+     */
+    private String deviceName;
+    private String platform;
+    private String version;
+    private String imagePath;
 
     //Added to control parallel reports
     private static boolean parallel = false;
@@ -102,7 +110,8 @@ public class ReportBuilder {
     public ReportBuilder(List<String> jsonReports, File reportDirectory, String pluginUrlPath, String buildNumber,
             String buildProject, boolean skippedFails, boolean pendingFails, boolean undefinedFails,
             boolean missingFails, boolean flashCharts, boolean runWithJenkins, boolean artifactsEnabled,
-            String artifactConfig, boolean highCharts, boolean parallelTesting) throws IOException, VelocityException {
+            String artifactConfig, boolean highCharts, boolean parallelTesting, String deviceName,
+            String platform, String version, String imagePath) throws IOException, VelocityException {
         try {
             this.reportDirectory = reportDirectory;
             this.buildNumber = buildNumber;
@@ -113,7 +122,11 @@ public class ReportBuilder {
             this.artifactsEnabled = artifactsEnabled;
             this.highCharts = highCharts;
             this.parallel = parallelTesting;
-
+            this.deviceName = deviceName;
+            this.platform = platform;
+            this.version = version;
+            this.imagePath = imagePath;
+            
             ConfigurationOptions configuration = ConfigurationOptions.instance();
             configuration.setSkippedFailsBuild(skippedFails);
             configuration.setPendingFailsBuild(pendingFails);
@@ -133,6 +146,17 @@ public class ReportBuilder {
             generateErrorPage(exception);
             System.out.println(exception);
         }
+    }
+    
+    public ReportBuilder(List<String> jsonReports, File reportDirectory, String pluginUrlPath, String buildNumber,
+            String buildProject, boolean skippedFails, boolean pendingFails, boolean undefinedFails,
+            boolean missingFails, boolean flashCharts, boolean runWithJenkins, boolean artifactsEnabled,
+            String artifactConfig, boolean highCharts, boolean parallelTesting) throws IOException, VelocityException {
+        
+        this(jsonReports, reportDirectory, pluginUrlPath, buildNumber, 
+        		buildProject, skippedFails, pendingFails, undefinedFails,
+        		missingFails, flashCharts, runWithJenkins, artifactsEnabled,
+        		artifactConfig, highCharts, parallelTesting, "", "", "", "");
     }
 
     public boolean getBuildStatus() {
@@ -369,6 +393,14 @@ public class ReportBuilder {
         result.put("jenkins_base", pluginUrlPath);
         result.put("build_project", buildProject);
         result.put("build_number", buildNumber);
+        
+        /*
+         * Custom Path
+         */
+        result.put("deviceName", deviceName);
+        result.put("platform", platform);
+        result.put("platformVersion", version);
+        
         int previousBuildNumber = -1;
         try {
             previousBuildNumber = Integer.parseInt(buildNumber);
