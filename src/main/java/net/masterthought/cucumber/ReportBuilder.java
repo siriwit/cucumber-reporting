@@ -51,6 +51,7 @@ public class ReportBuilder {
     private String platform;
     private String version;
     private String imagePath;
+    private String testName;
 
     //Added to control parallel reports
     private static boolean parallel = false;
@@ -111,7 +112,7 @@ public class ReportBuilder {
             String buildProject, boolean skippedFails, boolean pendingFails, boolean undefinedFails,
             boolean missingFails, boolean flashCharts, boolean runWithJenkins, boolean artifactsEnabled,
             String artifactConfig, boolean highCharts, boolean parallelTesting, String deviceName,
-            String platform, String version, String imagePath) throws IOException, VelocityException {
+            String platform, String version, String imagePath, String testName) throws IOException, VelocityException {
         try {
             this.reportDirectory = reportDirectory;
             this.buildNumber = buildNumber;
@@ -126,6 +127,7 @@ public class ReportBuilder {
             this.platform = platform;
             this.version = version;
             this.imagePath = imagePath;
+            this.testName = testName;
             
             ConfigurationOptions configuration = ConfigurationOptions.instance();
             configuration.setSkippedFailsBuild(skippedFails);
@@ -156,7 +158,7 @@ public class ReportBuilder {
         this(jsonReports, reportDirectory, pluginUrlPath, buildNumber, 
         		buildProject, skippedFails, pendingFails, undefinedFails,
         		missingFails, flashCharts, runWithJenkins, artifactsEnabled,
-        		artifactConfig, highCharts, parallelTesting, "", "", "", "");
+        		artifactConfig, highCharts, parallelTesting, "", "", "", "", "");
     }
 
     public boolean getBuildStatus() {
@@ -400,6 +402,7 @@ public class ReportBuilder {
         result.put("deviceName", deviceName);
         result.put("platform", platform);
         result.put("platformVersion", version);
+        result.put("testName", testName);
         
         int previousBuildNumber = -1;
         try {
