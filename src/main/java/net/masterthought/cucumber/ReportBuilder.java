@@ -228,18 +228,21 @@ public class ReportBuilder {
                 contextMap.put("report_status_colour", ri.getReportStatusColour(feature));
                 
                 List<Element> elements = feature.getElements().toList();
-                List<String> imagePaths = new ArrayList<String>(); 
                 
                 String relativePath = "./../../images/";
-                for (File file : imageFiles) {
-        			if (file.getName().contains(feature.getRawName().replace(":", "_").replace(" ", "_"))) {
-        				imagePaths.add(relativePath + file.getName().replace(" ", "_").replace("/", "_"));
-        			}
-        		}
                 
-                Collections.sort(imagePaths, String.CASE_INSENSITIVE_ORDER);
                 for (Element element : elements) {
-                	if (element.getStatus() == Status.FAILED) {
+                	
+                	List<String> imagePaths = new ArrayList<String>(); 
+                	
+                	for (File file : imageFiles) {
+            			if (file.getName().contains(replaceSpecialCharacter(element.getRawName()))) {
+            				imagePaths.add(relativePath + replaceSpecialCharacter(file.getName()));
+            			}
+            		}
+                	
+                	Collections.sort(imagePaths, String.CASE_INSENSITIVE_ORDER);
+                	if (element.getStatus() == Status.FAILED && !imagePaths.isEmpty()) {
                 		element.setImagePath(imagePaths.get(0));
                 		imagePaths.remove(0);
                 	}
@@ -321,13 +324,13 @@ public class ReportBuilder {
             	Element element = scenarioTag.getScenario();
             	String relativePath = "./../../images/";
                 for (File file : imageFiles) {
-        			if (file.getName().contains(element.getRawName().replace(":", "_").replace(" ", "_"))) {
-        				imagePaths.add(relativePath + file.getName().replace(" ", "_").replace("/", "_"));
+        			if (file.getName().contains(replaceSpecialCharacter(element.getRawName()))) {
+        				imagePaths.add(relativePath + replaceSpecialCharacter(file.getName()));
         			}
         		}
                 
                 Collections.sort(imagePaths, String.CASE_INSENSITIVE_ORDER);
-            	if (element.getStatus() == Status.FAILED) {
+            	if (element.getStatus() == Status.FAILED && !imagePaths.isEmpty()) {
             		element.setImagePath(imagePaths.get(0));
             		imagePaths.remove(0);
             	}
@@ -345,6 +348,10 @@ public class ReportBuilder {
         }
     }
 
+    private String replaceSpecialCharacter(String text) {
+    	return text.replace(":", "_").replace(" ", "_").replace("&", "_").replace("/", "_");
+    }
+    
     public void generateTagOverview() throws IOException, VelocityException {
         VelocityEngine ve = new VelocityEngine();
         ve.init(getProperties());
