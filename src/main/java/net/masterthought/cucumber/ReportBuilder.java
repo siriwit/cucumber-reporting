@@ -9,6 +9,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +20,9 @@ import java.util.Properties;
 
 import net.masterthought.cucumber.charts.FlashChartBuilder;
 import net.masterthought.cucumber.charts.JsChartUtil;
+import net.masterthought.cucumber.json.Element;
 import net.masterthought.cucumber.json.Feature;
+import net.masterthought.cucumber.util.Status;
 import net.masterthought.cucumber.util.UnzipUtils;
 import net.masterthought.cucumber.util.Util;
 
@@ -210,6 +215,8 @@ public class ReportBuilder {
         for (Map.Entry<String, List<Feature>> pairs : ri.getProjectFeatureMap().entrySet()) {
             List<Feature> featureList = pairs.getValue();
 
+            Collection<File> imageFiles = FileUtils.listFiles(new File(imagePath), new String[] {"jpg"}, true);
+            
             for (Feature feature : featureList) {
                 VelocityEngine ve = new VelocityEngine();
                 ve.init(getProperties());
@@ -219,7 +226,26 @@ public class ReportBuilder {
                 contextMap.put("parallel", ReportBuilder.isParallel());
                 contextMap.put("feature", feature);
                 contextMap.put("report_status_colour", ri.getReportStatusColour(feature));
-                contextMap.put("scenarios", feature.getElements().toList());
+                
+                List<Element> elements = feature.getElements().toList();
+                List<String> imagePaths = new ArrayList<String>(); 
+                
+                String relativePath = "./../../images/";
+                for (File file : imageFiles) {
+        			if (file.getName().contains(feature.getRawName().replace(":", "_").replace(" ", "_"))) {
+        				imagePaths.add(relativePath + file.getName().replace(" ", "_").replace("/", "_"));
+        			}
+        		}
+                
+                Collections.sort(imagePaths, String.CASE_INSENSITIVE_ORDER);
+                for (Element element : elements) {
+                	if (element.getStatus() == Status.FAILED) {
+                		element.setImagePath(imagePaths.get(0));
+                		imagePaths.remove(0);
+                	}
+                }
+                
+                contextMap.put("scenarios", elements);
                 contextMap.put("time_stamp", ri.timeStamp());
                 contextMap.put("artifactsEnabled", ConfigurationOptions.instance().artifactsEnabled());
                 contextMap.put("esc", new EscapeTool());
@@ -277,12 +303,35 @@ public class ReportBuilder {
 
 
     public void generateTagReports() throws IOException, VelocityException {
+    	
+    	Collection<File> imageFiles = FileUtils.listFiles(new File(imagePath), new String[] {"jpg"}, true);
+    	
         for (TagObject tagObject : ri.getTags()) {
             VelocityEngine ve = new VelocityEngine();
             ve.init(getProperties());
             Template featureResult = ve.getTemplate("templates/tagReport.vm");
             VelocityContextMap contextMap = VelocityContextMap.of(new VelocityContext());
             contextMap.putAll(getGeneralParameters());
+            
+            List<ScenarioTag> scenarioTags = tagObject.getScenarios();
+            List<String> imagePaths = new ArrayList<String>(); 
+            
+            for (ScenarioTag scenarioTag : scenarioTags) {
+            	
+            	Element element = scenarioTag.getScenario();
+            	String relativePath = "./../../images/";
+                for (File file : imageFiles) {
+        			if (file.getName().contains(element.getRawName().replace(":", "_").replace(" ", "_"))) {
+        				imagePaths.add(relativePath + file.getName().replace(" ", "_").replace("/", "_"));
+        			}
+        		}
+                
+            	if (element.getStatus() == Status.FAILED) {
+            		element.setImagePath(imagePaths.get(0));
+            		imagePaths.remove(0);
+            	}
+            }
+            
             contextMap.put("tag", tagObject);
             contextMap.put("time_stamp", ri.timeStamp());
             contextMap.put("report_status_colour", ri.getTagReportStatusColour(tagObject));

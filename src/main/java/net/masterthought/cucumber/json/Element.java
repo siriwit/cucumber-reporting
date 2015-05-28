@@ -26,6 +26,7 @@ public class Element {
     private String keyword;
     private Step[] steps;
     private Tag[] tags;
+    private String imagePath;
 
     public Element() {
     }
@@ -145,4 +146,17 @@ public class Element {
         }
     }
 
+	public String getImage() {
+		String result = "";
+		if (getStatus() == Status.FAILED) {
+			result = "<br><center><a href='"+ imagePath +"' ><img width='30%' height='30%' src='" + imagePath + "'/></a></center>";
+		}
+		
+		return result;
+	}
+
+	public void setImagePath(String imagePath) {
+		this.imagePath = imagePath;
+	}
+    
 }

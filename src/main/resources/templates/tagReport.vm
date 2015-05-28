@@ -34,10 +34,13 @@
     <div id="fullwidth_gradient">
         <div class="container_12">
             <div class="grid_9 heading">
-                <h2>Result for <span style="color:#66CCEE;">$tag.getTagName()</span> in Build: $build_number</h2>
+                <h2>Result for <span>$tag.getTagName()</span></h2>
                 #if ($hasCustomHeader)
                   <h3>$customHeader</h3>
                 #end
+                <span class="subhead">$deviceName</span>
+                <span class="subhead">$platform</span>
+                <span class="subhead">$platformVersion</span>
             </div>
         </div>
     </div>
@@ -91,6 +94,7 @@
                     #end
                 <div class="output-data">$step.getOutput()</div>
                 #end
+                $scenario.getScenario().getImage()
                 </div>
             #end
     </div>
