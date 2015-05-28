@@ -326,6 +326,7 @@ public class ReportBuilder {
         			}
         		}
                 
+                Collections.sort(imagePaths, String.CASE_INSENSITIVE_ORDER);
             	if (element.getStatus() == Status.FAILED) {
             		element.setImagePath(imagePaths.get(0));
             		imagePaths.remove(0);
