@@ -231,21 +231,32 @@ public class ReportBuilder {
                 
                 String relativePath = "./../../images/";
                 
+                List<String> imagePaths = new ArrayList<String>(); 
+            	
+                String previousElementName = "";
+                
                 for (Element element : elements) {
                 	
-                	List<String> imagePaths = new ArrayList<String>(); 
+                	String elementName = element.getRawName();
                 	
-                	for (File file : imageFiles) {
-            			if (file.getName().contains(replaceSpecialCharacter(element.getRawName()))) {
-            				imagePaths.add(relativePath + replaceSpecialCharacter(file.getName()));
-            			}
-            		}
+                	if (!elementName.equals(previousElementName)) {
+                		
+                		imagePaths = new ArrayList<String>();
+                		
+                		for (File file : imageFiles) {
+                			if (file.getName().contains(replaceSpecialCharacter(elementName))) {
+                				imagePaths.add(relativePath + replaceSpecialCharacter(file.getName()));
+                			}
+                		}
+                    	Collections.sort(imagePaths, String.CASE_INSENSITIVE_ORDER);
+                	}
                 	
-                	Collections.sort(imagePaths, String.CASE_INSENSITIVE_ORDER);
                 	if (element.getStatus() == Status.FAILED && !imagePaths.isEmpty()) {
                 		element.setImagePath(imagePaths.get(0));
                 		imagePaths.remove(0);
                 	}
+                	
+                	previousElementName = elementName;
                 }
                 
                 contextMap.put("scenarios", elements);
