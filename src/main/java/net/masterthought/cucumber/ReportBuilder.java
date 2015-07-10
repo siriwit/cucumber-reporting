@@ -57,6 +57,8 @@ public class ReportBuilder {
     private String version;
     private String imagePath;
     private String testName;
+    private boolean replaceRerunResult;
+    private List<String> rerunJsonFilePath;
 
     //Added to control parallel reports
     private static boolean parallel = false;
@@ -117,8 +119,8 @@ public class ReportBuilder {
             String buildProject, boolean skippedFails, boolean pendingFails, boolean undefinedFails,
             boolean missingFails, boolean flashCharts, boolean runWithJenkins, boolean artifactsEnabled,
             String artifactConfig, boolean highCharts, boolean parallelTesting, String deviceName,
-            String platform, String version, String imagePath, String testName) throws IOException, VelocityException {
-        try {
+            String platform, String version, String imagePath, String testName, boolean replaceRerunResult, List<String> rerunJsonFilePath) throws IOException, VelocityException {
+        try { 
             this.reportDirectory = reportDirectory;
             this.buildNumber = buildNumber;
             this.buildProject = buildProject;
@@ -133,6 +135,8 @@ public class ReportBuilder {
             this.version = version;
             this.imagePath = imagePath;
             this.testName = testName;
+            this.replaceRerunResult = replaceRerunResult;
+            this.rerunJsonFilePath = rerunJsonFilePath;
             
             ConfigurationOptions configuration = ConfigurationOptions.instance();
             configuration.setSkippedFailsBuild(skippedFails);
@@ -146,7 +150,7 @@ public class ReportBuilder {
             }
 
             ReportParser reportParser = new ReportParser(jsonReports);
-            this.ri = new ReportInformation(reportParser.getFeatures());
+            this.ri = new ReportInformation(reportParser.getFeatures(), replaceRerunResult, rerunJsonFilePath);
             // whatever happens we want to provide at least error page instead of empty report
         } catch (Exception exception) {
             parsingError = true;
@@ -163,7 +167,7 @@ public class ReportBuilder {
         this(jsonReports, reportDirectory, pluginUrlPath, buildNumber, 
         		buildProject, skippedFails, pendingFails, undefinedFails,
         		missingFails, flashCharts, runWithJenkins, artifactsEnabled,
-        		artifactConfig, highCharts, parallelTesting, "", "", "", "", "");
+        		artifactConfig, highCharts, parallelTesting, "", "", "", "", "", false, Collections.<String>emptyList());
     }
 
     public boolean getBuildStatus() {

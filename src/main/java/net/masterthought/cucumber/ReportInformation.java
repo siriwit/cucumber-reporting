@@ -3,8 +3,10 @@ package net.masterthought.cucumber;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.masterthought.cucumber.json.Artifact;
 import net.masterthought.cucumber.json.Element;
@@ -35,6 +37,8 @@ public class ReportInformation {
     private int totalPassingTagScenarios = 0;
     private int totalFailingTagScenarios = 0;
     private Background backgroundInfo = new Background();
+    private boolean replaceRerunResult;
+    private List<String> rerunJsonFilePath;
 
     public ReportInformation(Map<String, List<Feature>> projectFeatureMap) {
         this.projectFeatureMap = projectFeatureMap;
@@ -42,12 +46,44 @@ public class ReportInformation {
         processFeatures();
     }
 
+    public ReportInformation(Map<String, List<Feature>> projectFeatureMap, boolean replaceRerunResult, List<String> rerunJsonFilePath) {
+        this.projectFeatureMap = projectFeatureMap;
+        this.replaceRerunResult = replaceRerunResult;
+        this.rerunJsonFilePath = rerunJsonFilePath;
+        this.features = listAllFeatures();
+        processFeatures();
+    }
+    
     private List<Feature> listAllFeatures() {
         List<Feature> allFeatures = new ArrayList<Feature>();
+        Map<String, Feature> featureMap = new HashMap<String, Feature>();
         for (Map.Entry<String, List<Feature>> pairs : projectFeatureMap.entrySet()) {
             List<Feature> featureList = pairs.getValue();
-            allFeatures.addAll(featureList);
+            String key = pairs.getKey();
+            
+            if (replaceRerunResult) {
+            	if (!rerunJsonFilePath.contains(key)) {
+            		for (Feature feature : featureList) {
+                		featureMap.put(feature.getRawName(), feature);
+                	}
+            	}
+            } else {
+            	allFeatures.addAll(featureList);
+            }
         }
+        
+        if (replaceRerunResult) {
+        	for (String rerunFileName : rerunJsonFilePath) {
+        		List<Feature> featureList = projectFeatureMap.get(rerunFileName);
+        		
+        		for (Feature feature : featureList) {
+        			featureMap.put(feature.getRawName(), feature);
+        		}
+        	}
+        	
+        	allFeatures.addAll(featureMap.values());
+        }
+        
         return allFeatures;
     }
 
