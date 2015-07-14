@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import net.masterthought.cucumber.json.Artifact;
 import net.masterthought.cucumber.json.Element;
@@ -77,6 +76,24 @@ public class ReportInformation {
         		List<Feature> featureList = projectFeatureMap.get(rerunFileName);
         		
         		for (Feature feature : featureList) {
+        			
+        			Feature failedFeature = featureMap.get(feature.getRawName());
+        			if (failedFeature != null) {
+        				List<Element> rerunElementList = new ArrayList<Element>(feature.getElements());
+        				List<Element> tempElementList = new ArrayList<Element>();
+        				for (Element element : failedFeature.getElements()) {
+        					if (element.getStatus() == Status.FAILED 
+        							&& !rerunElementList.isEmpty()
+        							&& element.getRawName().equals(rerunElementList.get(0).getRawName())) {
+        						tempElementList.add(rerunElementList.remove(0));
+        					} else {
+        						tempElementList.add(element);
+        					}
+        				}
+        				
+        				feature.setElements(tempElementList.toArray(new Element[tempElementList.size()]));
+        			}
+        			
         			featureMap.put(feature.getRawName(), feature);
         		}
         	}

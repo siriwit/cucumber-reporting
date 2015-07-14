@@ -48,6 +48,10 @@ public class Feature {
         return Sequences.sequence(elements).realise();
     }
 
+    public void setElements(Element[] elements) {
+    	this.elements = elements;
+    }
+    
     public String getFileName() {
         List<String> matches = new ArrayList<String>();
         for (String line : Splitter.onPattern("/|\\\\").split(uri)) {
