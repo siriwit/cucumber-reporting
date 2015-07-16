@@ -2,6 +2,8 @@ package net.masterthought.cucumber;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -98,7 +100,9 @@ public class ReportInformation {
         		}
         	}
         	
-        	allFeatures.addAll(featureMap.values());
+        	List<Feature> sortedFeature = new ArrayList<Feature>(featureMap.values());
+        	Collections.sort(sortedFeature, new FeatureComparature());
+        	allFeatures.addAll(sortedFeature);
         }
         
         return allFeatures;
@@ -495,5 +499,12 @@ public class ReportInformation {
 
     public Background getBackgroundInfo() {
         return backgroundInfo;
+    }
+    
+    private class FeatureComparature implements Comparator<Feature> {
+        @Override
+        public int compare(Feature f1, Feature f2) {
+            return f1.getRawName().compareTo(f2.getRawName());
+        }
     }
 }
