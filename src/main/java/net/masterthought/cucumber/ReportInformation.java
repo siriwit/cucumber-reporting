@@ -2,7 +2,10 @@ package net.masterthought.cucumber;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +38,8 @@ public class ReportInformation {
     private int totalPassingTagScenarios = 0;
     private int totalFailingTagScenarios = 0;
     private Background backgroundInfo = new Background();
+    private boolean replaceRerunResult;
+    private List<String> rerunJsonFilePath;
 
     public ReportInformation(Map<String, List<Feature>> projectFeatureMap) {
         this.projectFeatureMap = projectFeatureMap;
@@ -42,12 +47,64 @@ public class ReportInformation {
         processFeatures();
     }
 
+    public ReportInformation(Map<String, List<Feature>> projectFeatureMap, boolean replaceRerunResult, List<String> rerunJsonFilePath) {
+        this.projectFeatureMap = projectFeatureMap;
+        this.replaceRerunResult = replaceRerunResult;
+        this.rerunJsonFilePath = rerunJsonFilePath;
+        this.features = listAllFeatures();
+        processFeatures();
+    }
+    
     private List<Feature> listAllFeatures() {
         List<Feature> allFeatures = new ArrayList<Feature>();
+        Map<String, Feature> featureMap = new HashMap<String, Feature>();
         for (Map.Entry<String, List<Feature>> pairs : projectFeatureMap.entrySet()) {
             List<Feature> featureList = pairs.getValue();
-            allFeatures.addAll(featureList);
+            String key = pairs.getKey();
+            
+            if (replaceRerunResult) {
+            	if (!rerunJsonFilePath.contains(key)) {
+            		for (Feature feature : featureList) {
+                		featureMap.put(feature.getRawName(), feature);
+                	}
+            	}
+            } else {
+            	allFeatures.addAll(featureList);
+            }
         }
+        
+        if (replaceRerunResult) {
+        	for (String rerunFileName : rerunJsonFilePath) {
+        		List<Feature> featureList = projectFeatureMap.get(rerunFileName);
+        		
+        		for (Feature feature : featureList) {
+        			
+        			Feature failedFeature = featureMap.get(feature.getRawName());
+        			if (failedFeature != null) {
+        				List<Element> rerunElementList = new ArrayList<Element>(feature.getElements());
+        				List<Element> tempElementList = new ArrayList<Element>();
+        				for (Element element : failedFeature.getElements()) {
+        					if (element.getStatus() == Status.FAILED 
+        							&& !rerunElementList.isEmpty()
+        							&& element.getRawName().equals(rerunElementList.get(0).getRawName())) {
+        						tempElementList.add(rerunElementList.remove(0));
+        					} else {
+        						tempElementList.add(element);
+        					}
+        				}
+        				
+        				feature.setElements(tempElementList.toArray(new Element[tempElementList.size()]));
+        			}
+        			
+        			featureMap.put(feature.getRawName(), feature);
+        		}
+        	}
+        	
+        	List<Feature> sortedFeature = new ArrayList<Feature>(featureMap.values());
+        	Collections.sort(sortedFeature, new FeatureComparature());
+        	allFeatures.addAll(sortedFeature);
+        }
+        
         return allFeatures;
     }
 
@@ -442,5 +499,12 @@ public class ReportInformation {
 
     public Background getBackgroundInfo() {
         return backgroundInfo;
+    }
+    
+    private class FeatureComparature implements Comparator<Feature> {
+        @Override
+        public int compare(Feature f1, Feature f2) {
+            return f1.getRawName().compareTo(f2.getRawName());
+        }
     }
 }
