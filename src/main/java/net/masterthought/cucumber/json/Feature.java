@@ -108,7 +108,7 @@ public class Feature {
 
     public Status getStatus() {
         Sequence<Status> results = getElements().map(Element.Functions.status());
-        return results.contains(Status.FAILED) ? Status.FAILED : Status.PASSED;
+        return results.contains(Status.FAILED) || results.contains(Status.SKIPPED)? Status.FAILED : Status.PASSED;
     }
 
     public String getName() {
