@@ -40,7 +40,7 @@ public class Element {
     }
 
     public Status getStatus() {
-        boolean hasNoFailed = getSteps().filter(Step.predicates.hasStatus(Status.FAILED)).isEmpty();
+        boolean hasNoFailed = getSteps().filter(Step.predicates.hasStatus(Status.FAILED)).isEmpty() && getSteps().filter(Step.predicates.hasStatus(Status.SKIPPED)).isEmpty() && getSteps().filter(Step.predicates.hasStatus(Status.UNDEFINED)).isEmpty();
         if (!hasNoFailed) {
             return Status.FAILED;
         }
